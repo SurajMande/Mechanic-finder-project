@@ -7,6 +7,7 @@ import { notificationUtils } from "../utils/notificationUtils"
 import io from "socket.io-client"
 import config from "../config"
 import toast from "react-hot-toast"
+import MapTracker from "./MapTracker"
 
 const RealTimeTracker = ({ requestId, mechanicInfo, userLocation }) => {
   const [mechanicLocation, setMechanicLocation] = useState(null)
@@ -18,27 +19,50 @@ const RealTimeTracker = ({ requestId, mechanicInfo, userLocation }) => {
   const watchIdRef = useRef(null)
 
   useEffect(() => {
-    // Initialize socket connection
-    const socket = io(config.SOCKET_URL)
+    // Initialize socket connection with better error handling
+    console.log(`🔌 Connecting to Socket.IO at: ${config.SOCKET_URL}`)
+    
+    const socket = io(config.SOCKET_URL, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: Infinity,
+      transports: ["websocket", "polling"],
+      withCredentials: true,
+    })
+    
     socketRef.current = socket
 
-    // Join tracking room
-    socket.emit("join-tracking-room", requestId)
-
-    // Connection status
+    // Connection established
     socket.on("connect", () => {
       setIsConnected(true)
-      console.log("Connected to tracking server")
+      console.log("✅ Connected to tracking server, socket ID:", socket.id)
+      
+      // Join tracking room after connection
+      socket.emit("join-tracking-room", requestId)
+      console.log(`📍 Joined tracking room: tracking-${requestId}`)
     })
 
-    socket.on("disconnect", () => {
+    // Connection error
+    socket.on("connect_error", (error) => {
+      console.error("❌ Socket connection error:", error.message)
+      toast.error(`Connection error: ${error.message}`)
+    })
+
+    // Disconnected
+    socket.on("disconnect", (reason) => {
       setIsConnected(false)
-      console.log("Disconnected from tracking server")
+      console.log("🔌 Disconnected from tracking server. Reason:", reason)
+    })
+
+    // Reconnecting
+    socket.on("reconnecting", (attemptNumber) => {
+      console.log(`🔄 Reconnection attempt ${attemptNumber}...`)
     })
 
     // Listen for location updates
     socket.on("location-update", (data) => {
-      console.log("Location update received:", data)
+      console.log("📍 Location update received:", data)
       setMechanicLocation(data.location)
       setLastUpdate(new Date(data.timestamp))
 
@@ -68,6 +92,14 @@ const RealTimeTracker = ({ requestId, mechanicInfo, userLocation }) => {
       console.log("Status update received:", data)
       if (mechanicInfo && data.status) {
         notificationUtils.showStatusUpdate(data.status, mechanicInfo.name)
+      }
+    })
+
+    // Listen for errors
+    socket.on("error", (error) => {
+      console.error("❌ Socket error:", error)
+      if (error.message) {
+        toast.error(`Server error: ${error.message}`)
       }
     })
 
@@ -144,6 +176,18 @@ const RealTimeTracker = ({ requestId, mechanicInfo, userLocation }) => {
 
   return (
     <div className="space-y-6">
+      {/* Map Component */}
+      {mechanicLocation && userLocation && (
+        <MapTracker
+          userLocation={userLocation}
+          mechanicLocation={mechanicLocation}
+          distance={distance}
+          estimatedTime={estimatedTime}
+          mechanicName={mechanicInfo?.name}
+          isConnected={isConnected}
+        />
+      )}
+
       {/* Connection Status */}
       <div className={`flex items-center justify-between p-4 rounded-xl ${status.bg}`}>
         <div className="flex items-center space-x-3">

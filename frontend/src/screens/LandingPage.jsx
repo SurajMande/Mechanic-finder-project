@@ -2,10 +2,12 @@
 
 import React from "react"
 import { Link } from "react-router-dom"
-import { ArrowRight, Users, Clock, Shield, Star, Zap, MapPin, Wrench } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { auth } from "../utils/auth"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
+import FeaturesSection from "../components/Features"
+import HowItWorksTimeline from "../components/HowItWorks"
 
 const LandingPage = () => {
   // Redirect if already authenticated
@@ -15,33 +17,6 @@ const LandingPage = () => {
       window.location.href = role === "mechanic" ? "/mechanic/dashboard" : "/user/dashboard"
     }
   }, [])
-
-  const features = [
-    {
-      icon: Users,
-      title: "Verified Mechanics",
-      description: "All mechanics are background-checked and certified professionals with proven expertise.",
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      icon: Clock,
-      title: "Quick Response",
-      description: "Get connected with nearby mechanics within minutes, 24/7 availability.",
-      color: "from-emerald-500 to-teal-500",
-    },
-    {
-      icon: Shield,
-      title: "Secure & Safe",
-      description: "Your data and transactions are protected with enterprise-grade security.",
-      color: "from-purple-500 to-indigo-500",
-    },
-    {
-      icon: Star,
-      title: "Quality Service",
-      description: "Rated mechanics with proven track records and verified customer reviews.",
-      color: "from-amber-500 to-orange-500",
-    },
-  ]
 
   const stats = [
     { number: "10K+", label: "Happy Customers" },
@@ -113,185 +88,90 @@ const LandingPage = () => {
         </div>
       </section>
 
+    <FeaturesSection />
+    <HowItWorksTimeline/>
 
-      {/* Features Section */}
-<section className="py-14 sm:py-24 bg-white px-6">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-    {/* Header */}
-    <div className="text-center mb-14 sm:mb-20">
-      <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 sm:mb-6">
-        Why Choose MechanicFinder?
-      </h2>
-      <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto">
-        We connect you with trusted professionals using smart technology —
-        fast, reliable, and transparent.
-      </p>
-    </div>
 
-    {/* Feature Cards */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-      {features.map((feature, index) => (
-        <div
-          key={index}
-          className="group relative bg-white border border-slate-200 
-          rounded-2xl p-6 sm:p-7
-          hover:-translate-y-2 hover:shadow-xl 
-          transition-all duration-300"
-        >
-          {/* Icon */}
-          <div
-            className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl 
-            bg-gradient-to-r ${feature.color}
-            flex items-center justify-center mb-5
-            shadow-sm group-hover:scale-110 transition-transform`}
-          >
-            <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-          </div>
+ {/* Premium CTA */}
+<section className="py-24 bg-slate-50">
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 px-8 py-16 sm:px-16 sm:py-24 shadow-2xl">
+      
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 blur-3xl opacity-20">
+        <div className="aspect-square h-96 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600" />
+      </div>
+      <div className="absolute bottom-0 left-0 translate-y-24 -translate-x-24 blur-3xl opacity-10">
+        <div className="aspect-square h-80 rounded-full bg-blue-500" />
+      </div>
 
-          {/* Content */}
-          <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-2">
-            {feature.title}
-          </h3>
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-            {feature.description}
+      <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        
+        {/* Left Content */}
+        <div className="z-10">
+          <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium tracking-wider text-blue-400 uppercase bg-blue-400/10 rounded-full border border-blue-400/20">
+            Available 24/7
+          </span>
+          
+          <h2 className="text-4xl md:text-6xl font-bold text-white leading-[1.1] mb-8">
+            Stuck on the road? <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">
+              We’ve got you.
+            </span>
+          </h2>
+
+          <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-lg leading-relaxed">
+            Connect with verified local mechanics in seconds. Experience 
+            <span className="text-slate-200"> transparent pricing</span> and 
+            <span className="text-slate-200"> real-time tracking</span> when it matters most.
           </p>
 
-          {/* Hover accent */}
-          <div
-            className={`absolute bottom-0 left-0 h-1 w-full rounded-b-2xl 
-            bg-gradient-to-r ${feature.color}
-            opacity-0 group-hover:opacity-100 transition-opacity`}
-          />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link
+              to="/signup"
+              className="group inline-flex items-center justify-center px-8 py-4 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-500 transition-all duration-300 shadow-lg shadow-blue-600/25 active:scale-95"
+            >
+              Find a mechanic
+              <svg className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+
+            <Link
+              to="/signup"
+              className="inline-flex items-center justify-center px-8 py-4 rounded-xl border border-slate-700 text-slate-300 font-semibold hover:bg-slate-800 hover:text-white transition-all duration-300 active:scale-95"
+            >
+              Join as a mechanic
+            </Link>
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
-</section>
 
-
-     {/* How It Works Section */}
-<section className="py-10 sm:py-24 bg-white px-8">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-    {/* Header */}
-    <div className="text-center mb-14 sm:mb-18">
-      <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 mb-5">
-        How It Works
-      </h2>
-      <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto">
-        Get your vehicle fixed in just three easy steps
-      </p>
-    </div>
-
-    {/* Cards */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-      {[
-        {
-          step: "01",
-          title: "Request Service",
-          description:
-            "Describe your vehicle issue, share your location, and upload photos for quicker diagnosis.",
-          icon: MapPin,
-        },
-        {
-          step: "02",
-          title: "Get Matched",
-          description:
-            "Nearby verified mechanics receive your request and respond within minutes.",
-          icon: Users,
-        },
-        {
-          step: "03",
-          title: "Track & Fix",
-          description:
-            "Track your mechanic in real-time and get your vehicle repaired professionally.",
-          icon: Wrench,
-        },
-      ].map((item, index) => (
-        <div
-          key={index}
-          className="group relative bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5"
-        >
-          {/* Step number */}
-          <div className="absolute top-4 right-4 text-xs font-bold text-slate-300 group-hover:text-blue-600 transition-colors">
-            {item.step}
+        {/* Right Visual */}
+        <div className="relative group lg:ml-auto w-full max-w-md lg:max-w-none">
+          {/* Image Frame with Glass Effect */}
+          <div className="relative z-10 overflow-hidden rounded-3xl border border-white/10 shadow-2xl transition-transform duration-500 group-hover:-translate-y-2">
+            <img
+              src="https://images.pexels.com/photos/6078/road-man-broken-car-6078.jpg"
+              alt="Mechanic assisting roadside vehicle"
+              className="w-full h-[400px] object-cover scale-105 group-hover:scale-100 transition-transform duration-700"
+            />
+            {/* Overlay Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-60" />
           </div>
 
-          {/* Icon */}
-          <div className="mb-5">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-300">
-              <item.icon className="h-7 w-7 text-white" />
+          {/* Floating Badge */}
+          <div className="absolute -bottom-6 -left-6 z-20 bg-white p-4 rounded-2xl shadow-xl hidden sm:flex items-center gap-4 animate-bounce-slow">
+            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
             </div>
+           
           </div>
-
-          {/* Content */}
-          <h3 className="text-lg sm:text-xl font-semibold text-slate-900 mb-3">
-            {item.title}
-          </h3>
-          <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-            {item.description}
-          </p>
-
-          {/* Bottom accent */}
-          <div className="mt-6 h-1 w-10 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
-      ))}
-    </div>
-  </div>
-</section>
 
-
-
-      {/* CTA Section */}
-<section className="relative py-16 sm:py-24 overflow-hidden">
-  {/* Gradient background */}
-  <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700" />
-
-  {/* Overlay noise / depth */}
-  <div className="absolute inset-0 bg-black/10" />
-
-  {/* Floating glow shapes */}
-  <div className="absolute -top-24 -left-24 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
-  <div className="absolute top-1/2 -right-24 w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl" />
-  <div className="absolute bottom-0 left-1/2 w-64 h-64 bg-purple-400/20 rounded-full blur-3xl -translate-x-1/2" />
-
-  {/* Content */}
-  <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-    <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4 sm:mb-6 leading-tight">
-      Ready to Get Back on the Road?
-    </h2>
-
-    <p className="text-lg sm:text-xl text-blue-100 mb-8 sm:mb-10 max-w-2xl mx-auto">
-      Connect with trusted mechanics nearby and get your vehicle fixed fast —
-      anytime, anywhere.
-    </p>
-
-    {/* CTA Buttons */}
-    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-      {/* Primary CTA */}
-      <Link
-        to="/signup"
-        className="group relative inline-flex items-center justify-center px-7 sm:px-9 py-3.5 sm:py-4 
-        rounded-xl font-semibold text-blue-700 bg-white 
-        shadow-[0_10px_30px_rgba(0,0,0,0.25)]
-        hover:shadow-[0_15px_40px_rgba(0,0,0,0.35)]
-        transition-all duration-300 hover:-translate-y-0.5 w-full sm:w-auto"
-      >
-        <span className="relative z-10">Find a Mechanic</span>
-        <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-white to-blue-50 opacity-0 group-hover:opacity-100 transition-opacity" />
-      </Link>
-
-      {/* Secondary CTA */}
-      <Link
-        to="/signup"
-        className="inline-flex items-center justify-center px-7 sm:px-9 py-3.5 sm:py-4 
-        rounded-xl font-semibold text-white 
-        border border-white/40 hover:border-white 
-        hover:bg-white/10 transition-all duration-300 w-full sm:w-auto"
-      >
-        Join as a Mechanic
-      </Link>
+      </div>
     </div>
   </div>
 </section>

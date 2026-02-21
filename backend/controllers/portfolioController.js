@@ -55,23 +55,58 @@ const getPortfolio = async (req, res) => {
 const getPublicPortfolio = async (req, res) => {
   try {
     const { mechanicId } = req.params
+    console.log(`📂 Fetching portfolio for mechanic: ${mechanicId}`)
 
-    const portfolio = await MechanicPortfolio.findOne({
+    let portfolio = await MechanicPortfolio.findOne({
       mechanic: mechanicId,
-      isPublic: true,
     }).populate("mechanic", "name specialization experience rating totalRatings completedJobs profileImage")
 
+    // If portfolio doesn't exist, create a default one
     if (!portfolio) {
-      return res.status(404).json({ message: "Portfolio not found or not public" })
+      console.log(`⚠️  Portfolio not found. Creating default portfolio for mechanic ${mechanicId}`)
+      
+      portfolio = await MechanicPortfolio.create({
+        mechanic: mechanicId,
+        bio: "",
+        services: [],
+        certifications: [],
+        workImages: [],
+        availability: {
+          monday: { start: "09:00", end: "18:00", available: true },
+          tuesday: { start: "09:00", end: "18:00", available: true },
+          wednesday: { start: "09:00", end: "18:00", available: true },
+          thursday: { start: "09:00", end: "18:00", available: true },
+          friday: { start: "09:00", end: "18:00", available: true },
+          saturday: { start: "09:00", end: "16:00", available: true },
+          sunday: { start: "", end: "", available: false },
+        },
+        serviceAreas: [],
+        tools: [],
+        achievements: [],
+        socialLinks: {},
+        isPublic: true,
+        views: 0,
+      })
+
+      await portfolio.populate("mechanic", "name specialization experience rating totalRatings completedJobs profileImage")
+      console.log(`✅ Default portfolio created`)
+    }
+
+    // If portfolio exists but not public, make it public
+    if (!portfolio.isPublic) {
+      console.log(`⚠️  Portfolio is private. Making it public...`)
+      portfolio.isPublic = true
+      await portfolio.save()
     }
 
     // Increment view count
     portfolio.views += 1
     await portfolio.save()
 
+    console.log(`✅ Portfolio returned successfully. Views: ${portfolio.views}`)
     res.json(portfolio)
   } catch (error) {
-    console.error("Get public portfolio error:", error)
+    console.error("❌ Get public portfolio error:", error)
     res.status(500).json({ message: "Server error" })
   }
 }

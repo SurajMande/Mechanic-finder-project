@@ -11,6 +11,9 @@ import MechanicDashboard from "./screens/MechanicDashboard"
 import RequestPage from "./screens/RequestPage"
 import TrackMechanic from "./screens/TrackMechanic"
 
+// Components
+import MechanicPortfolio from "./components/MechanicPortfolio"
+
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
   const isAuthenticated = auth.isAuthenticated()
@@ -125,6 +128,11 @@ function App() {
                 <TrackMechanic />
               </ProtectedRoute>
             }
+          />
+
+          <Route
+            path="/mechanic/portfolio/:mechanicId"
+            element={<MechanicPortfolio />}
           />
         </Routes>
       </div>

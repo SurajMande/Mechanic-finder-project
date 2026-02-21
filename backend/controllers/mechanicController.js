@@ -1,4 +1,5 @@
 const Mechanic = require("../models/Mechanic")
+const MechanicPortfolio = require("../models/MechanicPortfolio")
 const jwt = require("jsonwebtoken")
 const { validationResult } = require("express-validator")
 // const cacheService = require("../services/cacheService") // ❌ COMMENTED
@@ -33,6 +34,30 @@ const registerMechanic = async (req, res) => {
       specialization,
       experience: Number.parseInt(experience),
       role: "mechanic",
+    })
+
+    // Create default portfolio for new mechanic
+    await MechanicPortfolio.create({
+      mechanic: mechanic._id,
+      bio: "",
+      services: [],
+      certifications: [],
+      workImages: [],
+      availability: {
+        monday: { start: "09:00", end: "18:00", available: true },
+        tuesday: { start: "09:00", end: "18:00", available: true },
+        wednesday: { start: "09:00", end: "18:00", available: true },
+        thursday: { start: "09:00", end: "18:00", available: true },
+        friday: { start: "09:00", end: "18:00", available: true },
+        saturday: { start: "09:00", end: "16:00", available: true },
+        sunday: { start: "", end: "", available: false },
+      },
+      serviceAreas: [],
+      tools: [],
+      achievements: [],
+      socialLinks: {},
+      isPublic: true,
+      views: 0,
     })
 
     const token = generateToken(mechanic._id, mechanic.role)

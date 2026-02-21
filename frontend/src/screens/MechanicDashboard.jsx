@@ -10,6 +10,7 @@ import BookingHistory from "../components/BookingHistory"
 import ProfileForm from "../components/ProfileForm"
 import AvailabilityToggle from "../components/AvailabilityToggle"
 import AdvancedSearchFilters from "../components/AdvancedSearchFilters"
+import MechanicLocationSharer from "../components/MechanicLocationSharer"
 import { notificationUtils } from "../utils/notificationUtils"
 import config from "../config"
 import toast from "react-hot-toast"
@@ -429,6 +430,18 @@ const MechanicDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Navbar />
+
+      {/* Location Sharer - Active when mechanic has ongoing requests */}
+      {activeRequests.length > 0 && (
+        <MechanicLocationSharer
+          requestId={activeRequests[0]._id}
+          mechanicId={mechanicProfile?._id}
+          isActive={
+            activeRequests.length > 0 && 
+            ["accepted", "in-progress"].includes(activeRequests[0]?.status)
+          }
+        />
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">

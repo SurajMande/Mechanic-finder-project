@@ -16,11 +16,33 @@ connectDB()
 
 const app = express()
 const server = http.createServer(app)
+
+// Configure allowed origins
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:5000",
+  "http://127.0.0.1:5000",
+  process.env.CLIENT_URL || "http://localhost:3000",
+  "https://mechanic-finder-project.vercel.app",
+  "https://mechanic-finder-project.onrender.com",
+]
+
 const io = socketIo(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl requests)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        console.warn(`⚠️ CORS blocked origin: ${origin}`)
+        callback(new Error("CORS not allowed"), false)
+      }
+    },
     methods: ["GET", "POST"],
+    credentials: true,
   },
+  transports: ["websocket", "polling"], // Support both WebSocket and polling
 })
 
 // Security and performance middleware
@@ -87,44 +109,179 @@ io.on("connection", (socket) => {
   })
 
   socket.on("update-location", async (data) => {
-    const { requestId, location, mechanicId } = data
+    try {
+      console.log(`📍 Received location update from ${socket.id}:`, data)
+      
+      const { requestId, location, mechanicId } = data
 
-    socket.to(`tracking-${requestId}`).emit("location-update", {
-      mechanicId,
-      location,
-      timestamp: Date.now(),
-    })
+      // Validate data structure
+      if (!requestId) {
+        console.warn("❌ Missing requestId")
+        return socket.emit("error", {
+          message: "Missing required field: requestId",
+        })
+      }
 
-    socket.to("mechanics").emit("mechanic-location-update", {
-      mechanicId,
-      location,
-      timestamp: Date.now(),
-    })
+      if (!location) {
+        console.warn("❌ Missing location object")
+        return socket.emit("error", {
+          message: "Missing required field: location",
+        })
+      }
+
+      if (!mechanicId) {
+        console.warn("❌ Missing mechanicId")
+        return socket.emit("error", {
+          message: "Missing required field: mechanicId",
+        })
+      }
+
+      // Validate location object
+      if (typeof location.latitude !== "number") {
+        console.warn("❌ Invalid latitude type:", typeof location.latitude)
+        return socket.emit("error", {
+          message: "Invalid location format. Latitude must be a number",
+        })
+      }
+
+      if (typeof location.longitude !== "number") {
+        console.warn("❌ Invalid longitude type:", typeof location.longitude)
+        return socket.emit("error", {
+          message: "Invalid location format. Longitude must be a number",
+        })
+      }
+
+      // Validate coordinate ranges
+      if (Math.abs(location.latitude) > 90) {
+        console.warn("❌ Latitude out of range:", location.latitude)
+        return socket.emit("error", {
+          message: "Invalid latitude. Must be between -90 and 90",
+        })
+      }
+
+      if (Math.abs(location.longitude) > 180) {
+        console.warn("❌ Longitude out of range:", location.longitude)
+        return socket.emit("error", {
+          message: "Invalid longitude. Must be between -180 and 180",
+        })
+      }
+
+      // Broadcast to users tracking this request
+      const trackingRoom = `tracking-${requestId}`
+      const updateData = {
+        mechanicId,
+        location: {
+          latitude: parseFloat(location.latitude),
+          longitude: parseFloat(location.longitude),
+          accuracy: location.accuracy || null,
+        },
+        timestamp: Date.now(),
+      }
+
+      console.log(`📡 Broadcasting location to room: ${trackingRoom}`)
+      socket.to(trackingRoom).emit("location-update", updateData)
+
+      // Also broadcast to mechanics room for awareness
+      console.log(`📡 Broadcasting to mechanics room`)
+      socket.to("mechanics").emit("mechanic-location-update", {
+        mechanicId,
+        location: {
+          latitude: parseFloat(location.latitude),
+          longitude: parseFloat(location.longitude),
+          accuracy: location.accuracy || null,
+        },
+        timestamp: Date.now(),
+      })
+
+      console.log(`✅ Location update successfully processed for request ${requestId}`)
+    } catch (error) {
+      console.error("❌ Error processing location update:", error)
+      socket.emit("error", {
+        message: "Failed to process location update",
+        details: error.message,
+      })
+    }
   })
 
   socket.on("status-update", async (data) => {
-    const { requestId, status, mechanicId } = data
+    try {
+      const { requestId, status, mechanicId } = data
 
-    socket.to(`tracking-${requestId}`).emit("status-update", {
-      requestId,
-      status,
-      mechanicId,
-      timestamp: Date.now(),
-    })
+      // Validate required fields
+      if (!requestId || !status || !mechanicId) {
+        return socket.emit("error", {
+          message: "Missing required fields: requestId, status, mechanicId",
+        })
+      }
+
+      // Validate status value
+      const validStatuses = ["pending", "assigned", "accepted", "in-progress", "completed", "cancelled"]
+      if (!validStatuses.includes(status)) {
+        return socket.emit("error", {
+          message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+        })
+      }
+
+      // Broadcast to users tracking this request
+      socket.to(`tracking-${requestId}`).emit("status-update", {
+        requestId,
+        status,
+        mechanicId,
+        timestamp: Date.now(),
+      })
+
+      console.log(`Status update for request ${requestId}: ${status}`)
+    } catch (error) {
+      console.error("Error processing status update:", error)
+      socket.emit("error", {
+        message: "Failed to process status update",
+        details: error.message,
+      })
+    }
   })
 
   socket.on("availability-toggle", async (data) => {
-    const { mechanicId, isAvailable } = data
+    try {
+      const { mechanicId, isAvailable } = data
 
-    socket.to("mechanics").emit("mechanic-availability-changed", {
-      mechanicId,
-      isAvailable,
-      timestamp: Date.now(),
-    })
+      // Validate required fields
+      if (!mechanicId || typeof isAvailable !== "boolean") {
+        return socket.emit("error", {
+          message: "Missing or invalid required fields: mechanicId (string), isAvailable (boolean)",
+        })
+      }
+
+      // Broadcast to all mechanics
+      socket.to("mechanics").emit("mechanic-availability-changed", {
+        mechanicId,
+        isAvailable,
+        timestamp: Date.now(),
+      })
+
+      console.log(`Mechanic ${mechanicId} availability: ${isAvailable}`)
+    } catch (error) {
+      console.error("Error processing availability toggle:", error)
+      socket.emit("error", {
+        message: "Failed to process availability update",
+        details: error.message,
+      })
+    }
   })
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id)
+    // Optional: Update mechanic availability when they disconnect
+    // This could trigger marking them as offline in the database
+  })
+
+  // Error handler
+  socket.on("error", (error) => {
+    console.error("Socket error for", socket.id, ":", error)
+  })
+
+  // Invalid data handler
+  socket.on("invalid-data", (data) => {
+    console.warn("Invalid data received from", socket.id, ":", data)
   })
 })
 

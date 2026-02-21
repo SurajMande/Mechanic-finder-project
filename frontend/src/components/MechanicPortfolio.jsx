@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import axios from "axios"
+import Navbar from "./Navbar"
 import {
   Star,
   MapPin,
@@ -33,11 +34,13 @@ const MechanicPortfolio = () => {
 
   const fetchPortfolio = async () => {
     try {
+      console.log(`📂 Fetching portfolio for mechanic ID: ${mechanicId}`)
       const response = await axios.get(`/portfolio/${mechanicId}`)
+      console.log(`✅ Portfolio loaded successfully:`, response.data)
       setPortfolio(response.data)
     } catch (error) {
+      console.error("❌ Portfolio fetch error:", error.response?.data || error.message)
       toast.error("Failed to load mechanic portfolio")
-      console.error("Portfolio fetch error:", error)
     } finally {
       setLoading(false)
     }
@@ -52,7 +55,7 @@ const MechanicPortfolio = () => {
   }
 
   const getAvailabilityStatus = (availability) => {
-    const today = new Date().toLocaleDateString("en-US", { weekday: "lowercase" })
+    const today = new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
     const todaySchedule = availability[today]
 
     if (!todaySchedule?.available) {
@@ -108,6 +111,7 @@ const MechanicPortfolio = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <Navbar />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="card-elevated mb-8">
