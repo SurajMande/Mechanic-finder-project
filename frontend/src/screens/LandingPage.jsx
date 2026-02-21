@@ -18,12 +18,7 @@ const LandingPage = () => {
     }
   }, [])
 
-  const stats = [
-    { number: "10K+", label: "Happy Customers" },
-    { number: "500+", label: "Verified Mechanics" },
-    { number: "50+", label: "Cities Covered" },
-    { number: "4.9", label: "Average Rating" },
-  ]
+
 
   return (
     <div className="min-h-screen">

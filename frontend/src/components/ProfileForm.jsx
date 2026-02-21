@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import axios from "axios"
 import { Camera, Save, User, Mail, Phone, Briefcase, Clock, Upload, X, Check, Edit3 } from "lucide-react"
 import { uploadImage } from "../utils/auth"
@@ -23,17 +23,7 @@ const ProfileForm = ({ userRole }) => {
   const [hasChanges, setHasChanges] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
 
-  useEffect(() => {
-    fetchProfile()
-  }, [userRole])
-
-  useEffect(() => {
-    // Check if there are any changes
-    const changes = Object.keys(profile).some((key) => profile[key] !== originalProfile[key])
-    setHasChanges(changes)
-  }, [profile, originalProfile])
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const endpoint = userRole === "mechanic" ? "/mechanic/profile" : "/user/profile"
       const response = await axios.get(endpoint)
@@ -42,7 +32,19 @@ const ProfileForm = ({ userRole }) => {
     } catch (error) {
       toast.error("Failed to fetch profile")
     }
-  }
+  }, [userRole])
+
+  useEffect(() => {
+    fetchProfile()
+  }, [fetchProfile])
+
+  useEffect(() => {
+    // Check if there are any changes
+    const changes = Object.keys(profile).some((key) => profile[key] !== originalProfile[key])
+    setHasChanges(changes)
+  }, [profile, originalProfile])
+
+
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target

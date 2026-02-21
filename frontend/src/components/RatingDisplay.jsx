@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Star, ThumbsUp, MessageCircle, Clock, Award, ChevronDown, ChevronUp } from "lucide-react"
 import axios from "axios"
 
@@ -9,17 +9,10 @@ const RatingDisplay = ({ mechanicId, showDetailed = false }) => {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [showAllRatings, setShowAllRatings] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
 
-  useEffect(() => {
-    if (mechanicId) {
-      fetchRatings()
-    }
-  }, [mechanicId, currentPage])
-
-  const fetchRatings = async () => {
+  const fetchRatings = useCallback(async () => {
     try {
-      const response = await axios.get(`/ratings/mechanic/${mechanicId}?page=${currentPage}&limit=5`)
+      const response = await axios.get(`/ratings/mechanic/${mechanicId}?page=1&limit=5`)
       setRatings(response.data.ratings)
       setStats(response.data.stats)
     } catch (error) {
@@ -27,7 +20,13 @@ const RatingDisplay = ({ mechanicId, showDetailed = false }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [mechanicId])
+
+  useEffect(() => {
+    if (mechanicId) {
+      fetchRatings()
+    }
+  }, [mechanicId, fetchRatings])
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
