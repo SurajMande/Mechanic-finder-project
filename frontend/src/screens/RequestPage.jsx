@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
-import { MapPin, Camera, Send, Loader, X, AlertTriangle } from "lucide-react"
+import { MapPin, Camera, Send, Loader, X } from "lucide-react"
 import { uploadImage } from "../utils/auth"
 import Navbar from "../components/Navbar"
 import toast from "react-hot-toast"
@@ -153,7 +153,118 @@ const RequestPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Navbar />
-      {/* UI unchanged */}
+      <div className="max-w-2xl mx-auto p-6 sm:p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">Service Request</h1>
+          <p className="text-slate-600 mb-6">Describe your vehicle issue and we'll connect you with the best mechanics</p>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Issue Description */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Issue Description *</label>
+              <textarea
+                name="issueDescription"
+                value={formData.issueDescription}
+                onChange={handleInputChange}
+                placeholder="Describe the problem you're facing with your vehicle..."
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                rows={4}
+                required
+              />
+              <p className="text-xs text-slate-500 mt-1">Minimum 10 characters</p>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Priority Level</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {['low', 'medium', 'high', 'emergency'].map((priority) => (
+                  <button
+                    key={priority}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, priority }))}
+                    className={`py-2 px-3 rounded-lg font-medium transition-all ${
+                      formData.priority === priority
+                        ? getPriorityColor(priority) + ' ring-2 ring-offset-2'
+                        : 'border border-slate-300 text-slate-700 hover:border-slate-400'
+                    }`}
+                  >
+                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Location *</label>
+              <button
+                type="button"
+                onClick={getCurrentLocation}
+                disabled={locationLoading}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-slate-400 transition"
+              >
+                <MapPin className="h-4 w-4" />
+                {locationLoading ? 'Detecting location...' : 'Detect Current Location'}
+              </button>
+              {formData.locationName && (
+                <div className="mt-3 p-3 bg-slate-50 rounded-lg">
+                  <p className="text-sm text-slate-700">{formData.locationName}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Vehicle Image</label>
+              <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-indigo-400 transition">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={imageUploading}
+                  className="hidden"
+                  id="image-input"
+                />
+                <label htmlFor="image-input" className="cursor-pointer">
+                  <Camera className="h-8 w-8 mx-auto text-slate-400 mb-2" />
+                  <p className="text-sm text-slate-600">
+                    {imageUploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+                  </p>
+                  <p className="text-xs text-slate-500">PNG, JPG up to 5MB</p>
+                </label>
+              </div>
+
+              {formData.issueImage && (
+                <div className="mt-4 relative">
+                  <img
+                    src={formData.issueImage}
+                    alt="Issue preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg hover:from-indigo-700 hover:to-purple-700 disabled:from-slate-400 disabled:to-slate-400 transition font-semibold flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {loading ? 'Submitting...' : 'Submit Request'}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   )
 }

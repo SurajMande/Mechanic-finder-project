@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, Link } from "react-router-dom"
 import axios from "axios"
 import { ArrowLeft, MapPin, Clock, User, Phone, Star, Navigation } from "lucide-react"
@@ -15,12 +15,7 @@ const TrackMechanic = () => {
   const [userLocation, setUserLocation] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchRequestStatus()
-    getCurrentLocation()
-  }, [requestId])
-
-  const fetchRequestStatus = async () => {
+  const fetchRequestStatus = useCallback(async () => {
     try {
       const response = await axios.get(`/request/status/${requestId}`)
       setRequest(response.data.request)
@@ -30,9 +25,9 @@ const TrackMechanic = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [requestId])
 
-  const getCurrentLocation = async () => {
+  const getCurrentLocation = useCallback(async () => {
     try {
       const position = await locationUtils.getCurrentPosition()
       setUserLocation(position)
@@ -43,7 +38,12 @@ const TrackMechanic = () => {
         setUserLocation(request.location)
       }
     }
-  }
+  }, [request?.location])
+
+  useEffect(() => {
+    fetchRequestStatus()
+    getCurrentLocation()
+  }, [fetchRequestStatus, getCurrentLocation])
 
   const getStatusColor = (status) => {
     switch (status) {
