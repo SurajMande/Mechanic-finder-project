@@ -1,12 +1,7 @@
 import {
-  Wrench,
   Mail,
   Phone,
   MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -70,9 +65,9 @@ const Footer = () => {
           <p>© {currentYear} MechanicFinder. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             {["Privacy Policy", "Terms", "Cookies"].map((item) => (
-              <a key={item} href="#" className="hover:text-white transition-colors">
+              <button key={item} onClick={() => {}} className="hover:text-white transition-colors cursor-pointer">
                 {item}
-              </a>
+              </button>
             ))}
           </div>
         </div>
@@ -99,14 +94,14 @@ const FooterColumn = ({ title, links }) => (
               </span>
             </Link>
           ) : (
-            <a
-              href="#"
-              className="text-slate-400 hover:text-white transition flex items-center group"
+            <button
+              onClick={() => {}}
+              className="text-slate-400 hover:text-white transition flex items-center group cursor-pointer"
             >
               <span className="group-hover:translate-x-1 transition-transform">
                 {link.label}
               </span>
-            </a>
+            </button>
           )}
         </li>
       ))}

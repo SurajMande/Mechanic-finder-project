@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { MapPin, Loader } from "lucide-react"
@@ -40,6 +40,28 @@ const MapTracker = ({ userLocation, mechanicLocation, distance, estimatedTime, m
   const polyline = useRef(null)
   const [mapReady, setMapReady] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  // Update polyline between user and mechanic
+  const updatePolyline = useCallback(() => {
+    if (!userLocation || !mechanicLocation || !leafletMap.current) return
+
+    if (polyline.current) {
+      leafletMap.current.removeLayer(polyline.current)
+    }
+
+    polyline.current = L.polyline(
+      [
+        [userLocation.latitude, userLocation.longitude],
+        [mechanicLocation.latitude, mechanicLocation.longitude],
+      ],
+      {
+        color: "#3b82f6",
+        weight: 3,
+        opacity: 0.7,
+        dashArray: "5, 5",
+      },
+    ).addTo(leafletMap.current)
+  }, [userLocation, mechanicLocation])
 
   // Initialize map
   useEffect(() => {
@@ -122,7 +144,7 @@ const MapTracker = ({ userLocation, mechanicLocation, distance, estimatedTime, m
     return () => {
       // Cleanup is handled by map.remove() on new initialization
     }
-  }, [userLocation])
+  }, [userLocation, mechanicLocation, mechanicName, distance, updatePolyline])
 
   // Update mechanic marker and polyline
   useEffect(() => {
@@ -164,29 +186,7 @@ const MapTracker = ({ userLocation, mechanicLocation, distance, estimatedTime, m
     } catch (error) {
       console.error("Marker update error:", error)
     }
-  }, [mechanicLocation, distance, mechanicName, mapReady])
-
-  // Update polyline between user and mechanic
-  const updatePolyline = () => {
-    if (!userLocation || !mechanicLocation) return
-
-    if (polyline.current) {
-      leafletMap.current.removeLayer(polyline.current)
-    }
-
-    polyline.current = L.polyline(
-      [
-        [userLocation.latitude, userLocation.longitude],
-        [mechanicLocation.latitude, mechanicLocation.longitude],
-      ],
-      {
-        color: "#3b82f6",
-        weight: 3,
-        opacity: 0.7,
-        dashArray: "5, 5",
-      },
-    ).addTo(leafletMap.current)
-  }
+  }, [mechanicLocation, distance, mechanicName, mapReady, updatePolyline])
 
   return (
     <div className="space-y-4">

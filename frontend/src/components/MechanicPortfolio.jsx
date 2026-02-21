@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, Link } from "react-router-dom"
 import axios from "axios"
 import Navbar from "./Navbar"
@@ -28,11 +28,7 @@ const MechanicPortfolio = () => {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("overview")
 
-  useEffect(() => {
-    fetchPortfolio()
-  }, [mechanicId])
-
-  const fetchPortfolio = async () => {
+  const fetchPortfolio = useCallback(async () => {
     try {
       console.log(`📂 Fetching portfolio for mechanic ID: ${mechanicId}`)
       const response = await axios.get(`/portfolio/${mechanicId}`)
@@ -44,7 +40,11 @@ const MechanicPortfolio = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [mechanicId])
+
+  useEffect(() => {
+    fetchPortfolio()
+  }, [fetchPortfolio])
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString("en-US", {
